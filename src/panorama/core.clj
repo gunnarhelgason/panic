@@ -59,7 +59,7 @@
 
 (defn split-range [total-elems nthreads]
   (let [per-thread (int (/ total-elems nthreads))]
-    (partition 2 1 (range 0 (+ per-thread total-elems) per-thread))))
+    (partition 2 1 [total-elems] (range 0 total-elems per-thread))))
 
 (defn run
   [options]

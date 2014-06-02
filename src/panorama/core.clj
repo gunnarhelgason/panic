@@ -6,16 +6,17 @@
 
 (set! *warn-on-reflection* true)
 
-(defn divmod
-  [m n]
-  [(quot m n) (rem m n)])
-
 (defn calculate-luhn
   [pan]
-  (let [factors (cycle [2 1])
-        digits (map #(Character/digit ^Character % 10) (reverse pan))
-        products (flatten (map #(divmod (* % %2) 10) digits factors))]
-    (mod (- 10 (reduce + products)) 10)))
+  (let [arr (int-array (map #(Character/digit ^Character % 10) pan))
+        len (alength arr)]
+    (loop [i 1 acc 0]
+      (if (> i len)
+        (rem (* acc 9) 10)
+        (let [multiplier (if (= (mod i 2) 0) 1 2)
+              product (let [product (* multiplier (aget arr (- len i)))]
+                        (if (>= product 10) (- product 9) product))]
+          (recur (+ i 1) (+ acc product)))))))
 
 (defn string->bytes
   (^bytes

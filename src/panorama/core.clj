@@ -13,7 +13,7 @@
     (loop [i 1 acc 0]
       (if (> i len)
         (unchecked-remainder-int (* acc 9) 10)
-        (let [multiplier (if (= (mod i 2) 0) 1 2)
+        (let [multiplier (if (= (unchecked-remainder-int i 2) 0) 1 2)
               product (let [product (* multiplier (aget arr (- len i)))]
                         (if (>= product 10) (- product 9) product))]
           (recur (+ i 1) (+ acc product)))))))

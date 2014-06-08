@@ -9,12 +9,12 @@
 
 (defn calculate-luhn
   [^bytes arr]
-  (let [len (alength arr)]
+  (let [len (dec (alength arr))]
     (loop [i 1 acc 0]
       (if (> i len)
-        (unchecked-remainder-int (* acc 9) 10)
+        (+ (unchecked-remainder-int (* acc 9) 10) 48)
         (let [multiplier (if (= (unchecked-remainder-int i 2) 0) 1 2)
-              product (let [product (* multiplier (aget arr (- len i)))]
+              product (let [product (* multiplier (- (aget arr (- len i)) 48))]
                         (if (>= product 10) (- product 9) product))]
           (recur (+ i 1) (+ acc product)))))))
 
@@ -26,19 +26,21 @@
      (.digest md))))
 
 (defn insert
-  [^bytes arr n]
+  [^bytes arr ^long n]
   (let [nlen (alength arr)]
-    (aset-byte arr 15 0)
     (loop [i (- nlen 2) d n]
       (if (= d 0)
         arr
         (do
-          (aset-byte arr i (unchecked-remainder-int d 10))
+          (aset-byte arr i (+ (unchecked-remainder-int d 10) 48))
           (recur (- i 1) (unchecked-divide-int d 10)))))))
 
 (defn make-lookup-entries
   [iin start stop]
-  (let [panbytes (byte-array 16 (map #(Character/digit ^Character % 10) iin))
+  (let [panbytes (byte-array 16
+                    (concat
+                     (map byte (map char iin))
+                     (repeat (- 16 (count iin)) 48)))
         output-file (str "./" iin "_" start "-"(dec stop))]
     (with-open [w (output-stream (file  output-file))]
       (dotimes [i (- stop start)]

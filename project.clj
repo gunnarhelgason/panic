@@ -1,4 +1,4 @@
-(defproject panorama "0.1.0-SNAPSHOT"
+(defproject panic "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -6,5 +6,5 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.cli "0.3.1"]]
   :aot :all
-  :main panorama.core)
+  :main panic.core)
 

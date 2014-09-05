@@ -1,4 +1,4 @@
-(ns panorama.core
+(ns panic.core
   (:require [clojure.java.io :refer [file output-stream]]
             [clojure.tools.cli :refer [parse-opts]])
   (:import (java.security MessageDigest))

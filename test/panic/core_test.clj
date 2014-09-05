@@ -1,6 +1,6 @@
-(ns panorama.core-test
+(ns panic.core-test
   (:require [clojure.test :refer :all]
-            [panorama.core :refer :all]))
+            [panic.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

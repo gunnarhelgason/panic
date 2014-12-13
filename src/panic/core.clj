@@ -1,7 +1,8 @@
 (ns panic.core
   (:require [clojure.java.io :refer [reader]]
             [clojure.tools.cli :refer [parse-opts]]
-            [clojure.core.async :refer [thread chan >!! <!!]])
+            [clojure.core.async :refer [thread chan >!! <!!]]
+            [clojure.string :refer [join]])
   (:import (java.security MessageDigest))
   (:gen-class))
 
@@ -95,7 +96,7 @@
        (while true
          (let [pan (<!! channel)]
            (swap! cnt inc)
-           (println (str "[" (format fmt @cnt) "/" hashlen"] " (bytes->hex (:hash pan)) " -> " (bytes->string (:panbytes pan))))))))
+           (println (str "[" (format fmt @cnt) "/" hashlen "] " (bytes->hex (:hash pan)) " -> " (bytes->string (:panbytes pan))))))))
 
     (doall (map <!! workers))))
 
@@ -107,9 +108,25 @@
    ["-f" "--file FILE" "Input file containing SHA1 hashes"]
    ["-h" "--help"]])
 
+(defn usage [options-summary]
+  (->> ["PANic. Tool for bruteforcing of primary account number (PAN) SHA1 hashes."
+        ""
+        "Usage: java <panic jar file> [options]"
+        ""
+        "Options:"
+        options-summary
+        ""]
+       (join \newline)))
+
+(defn exit [status msg]
+  (println msg)
+  (System/exit status))
+
 (defn -main
   [& args]
   (let [{:keys [options _ _ summary]} (parse-opts args cli-options)]
-    (if (:help options)
-      (println summary)
-      (run options))))
+    (cond
+     (:help options) (exit 0 (usage summary))
+     (or (not (:iin options))
+         (not (:file options))) (exit 1 (usage summary)))
+    (run options)))

@@ -1,8 +1,7 @@
 (ns panic.core
   (:require [clojure.java.io :refer [reader]]
             [clojure.tools.cli :refer [parse-opts]]
-            [clojure.core.async :refer [thread chan >!! <!!]]
-            [clojure.string :refer [join]])
+            [clojure.core.async :refer [thread chan >!! <!!]])
   (:import (java.security MessageDigest))
   (:gen-class))
 
@@ -71,7 +70,7 @@
       (build-pan panbytes (+ start i))
       (aset-byte panbytes 15 (calculate-luhn panbytes))
       (when-let [h (get hashes (seq (sha1 panbytes)))]
-        (>!! channel {:hash h :panbytes panbytes})))))
+        (>!! channel {:hash h :panbytes (byte-array panbytes)})))))
 
 (defn split-range
   [total-elems nthreads]
@@ -94,10 +93,18 @@
            fmt (str "%0" padlen "d")
            cnt (atom 0)]
        (while true
-         (let [pan (<!! channel)]
-           (swap! cnt inc)
-           (println (str "[" (format fmt @cnt) "/" hashlen "] " (bytes->hex (:hash pan)) " -> " (bytes->string (:panbytes pan))))))))
-
+         (swap! cnt inc)
+         (let [pan (<!! channel)
+               msg (->> ["["
+                         (format fmt @cnt)
+                         "/"
+                         hashlen
+                         "] "
+                         (bytes->hex (:hash pan))
+                         " -> "
+                         (bytes->string (:panbytes pan))]
+                        (apply str))]
+           (println msg)))))
     (doall (map <!! workers))))
 
 (def cli-options
@@ -108,17 +115,17 @@
    ["-f" "--file FILE" "Input file containing SHA1 hashes"]
    ["-h" "--help"]])
 
-(defn usage [options-summary]
-  (->> ["PANic. Tool for bruteforcing of primary account number (PAN) SHA1 hashes."
-        ""
-        "Usage: java <panic jar file> [options]"
-        ""
-        "Options:"
+(defn usage
+  [options-summary]
+  (->> ["PANic. Tool for bruteforcing of primary account number (PAN) SHA1 hashes.\n\n"
+        "Usage: java <panic jar file> [options]\n\n"
+        "Options:\n"
         options-summary
-        ""]
-       (join \newline)))
+        "\n"]
+       (apply str)))
 
-(defn exit [status msg]
+(defn exit
+  [status msg]
   (println msg)
   (System/exit status))
 

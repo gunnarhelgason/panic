@@ -6,7 +6,7 @@
   (:gen-class))
 
 (set! *warn-on-reflection* true)
-(set! *unchecked-math* true)
+(set! *unchecked-math* :warn-on-boxed)
 
 (defn hex->byte
   [hex]
@@ -37,8 +37,8 @@
   (let [len (dec (alength arr))]
     (loop [i 1 acc 0]
       (if (> i len)
-        (+ (unchecked-remainder-int (* acc 9) 10) 48)
-        (let [multiplier (if (= (unchecked-remainder-int i 2) 0) 1 2)
+        (+ (rem (* acc 9) 10) 48)
+        (let [multiplier (if (= (rem i 2) 0) 1 2)
               product (let [product (* multiplier (- (aget arr (- len i)) 48))]
                         (if (>= product 10) (- product 9) product))]
           (recur (+ i 1) (+ acc product)))))))
@@ -57,8 +57,8 @@
       (if (= d 0)
         arr
         (do
-          (aset-byte arr i (+ (unchecked-remainder-int d 10) 48))
-          (recur (- i 1) (unchecked-divide-int d 10)))))))
+          (aset-byte arr i (+ (int (rem d 10)) 48))
+          (recur (- i 1) (quot d 10)))))))
 
 (defn search
   [iin start stop hashes channel]
@@ -66,15 +66,15 @@
                              (concat
                               (map byte (map char iin))
                               (repeat (- 16 (count iin)) 48)))]
-    (dotimes [i (- stop start)]
-      (build-pan panbytes (+ start i))
+    (dotimes [i (- (long stop) (long start))]
+      (build-pan panbytes (+ (long start) i))
       (aset-byte panbytes 15 (calculate-luhn panbytes))
       (when-let [h (get hashes (seq (sha1 panbytes)))]
         (>!! channel {:hash h :panbytes (byte-array panbytes)})))))
 
 (defn split-range
   [total-elems nthreads]
-  (let [per-thread (int (/ total-elems nthreads))]
+  (let [per-thread (quot total-elems nthreads)]
     (partition 2 1 [total-elems] (range 0 total-elems per-thread))))
 
 (defn run

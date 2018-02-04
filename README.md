@@ -1,6 +1,8 @@
 # PANic
 
-PANic is a Clojure command line tool implementing a partially known plaintext attack against unsalted SHA1 hashed primary account numbers (PAN's). This attack assumes the attacker chooses which [IIN (Issuer Identification Number)](https://en.wikipedia.org/wiki/Bank_card_number#Issuer_identification_number_.28IIN.29) to target, thereby greatly reducing the number of hashes that needs to be computed and compared.
+PANic is a simple command line tool implementing a partially known plaintext attack against unsalted primary account number (PAN) SHA1 hashes. By choosing which [IIN (Issuer Identification Number)](https://en.wikipedia.org/wiki/Bank_card_number#Issuer_identification_number_.28IIN.29) to target, the number of hashes that needs to be calculated is greatly reduced.
+
+Given a typical case with a 16 digit PAN, where the first 6 digits represent the IIN, and last digit is the luhn checksum, only 10^9 (one billion) hashes needs to be calculated to recover all PAN's within that IIN.  
 
 This tool has been created primarily as a learning exercise, but also to demonstrate how easy it is to recover PAN's from SHA1 hashes when you can make assumptions about the card issuer. No adwanced techniques (rainbow tables, GPU etc) are used - which should only emphasize that this is a highly practical attack.
 
@@ -23,7 +25,7 @@ Options:
 
 ## Example
 
-In this example, 100000 PAN's with the IIN '112233' are bruteforced.
+In this example, 100000 PAN's with the IIN '112233' are bruteforced in 23 minutes on a MacBook Air (Mid 2012 model).
 
 ```
 ~/d/p/panic ❯❯❯ time java -jar target/panic-0.1.0-SNAPSHOT-standalone.jar -i 112233 -t 4 -f resources/testdata
